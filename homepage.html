@@ -1,0 +1,725 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>TripMate - Explore the World</title>
+        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="ticket-styles.css">
+        <script src="api.js"></script>
+    </head>
+
+    <body>
+        <!-- Navigation Bar-->
+        <nav>
+            <div class="logo"><a href="#home">✈️TripMate</a></div>
+            <ul class="nav-links">
+                <li><a href="#home">Home</a></li>
+                <li><a href="#destinations">Attractions</a></li>
+                <li><a href="#services">Services</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+                <li><a href="#" onclick="showPremiumLoungeModal(event)" style="cursor:pointer;">👑 <span
+                            style="color:#3c73e9;">Premium</span></a></li>
+                <li>
+                    <div class="cart-icon" onclick="toggleCart()">
+                        🛒
+                        <span class="cart-count" id="cartCount">0</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="history-icon" onclick="toggleBookingHistory()">
+                        📋
+                        <span class="history-count" id="historyCount">0</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="profile-dropdown">
+                        <div class="profile-icon" onclick="toggleProfileDropdown()">
+                            <span class="profile-avatar" id="profileAvatar">👤</span>
+                        </div>
+                        <div class="profile-menu" id="profileMenu">
+                            <div class="profile-header">
+                                <div class="profile-info">
+                                    <div class="profile-name" id="profileName">Guest User</div>
+                                    <div class="profile-email" id="profileEmail">Not logged in</div>
+                                </div>
+                            </div>
+                            <div class="profile-divider"></div>
+                            <div class="profile-options">
+                                <a href="#" onclick="openMyProfile(event)" class="profile-option">
+                                    👤 My Profile
+                                </a>
+                                <a href="#" onclick="openMyBookings(event)" class="profile-option">
+                                    🎫 My Bookings
+                                </a>
+                                <a href="#" onclick="openSettings(event)" class="profile-option">
+                                    ⚙️ Settings
+                                </a>
+                                <a href="#" onclick="openPaymentMethods(event)" class="profile-option">
+                                    💳 Payment Methods
+                                </a>
+                                <a href="#" onclick="openWishlist(event)" class="profile-option">
+                                    ❤️ Wishlist
+                                </a>
+                            </div>
+                            <div class="profile-divider"></div>
+                            <a href="#" onclick="logout(event)" class="profile-logout">
+                                🚪 Logout
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Stella Chatbot Button -->
+        <button class="stella-chat-button" onclick="toggleStella()">
+            🤖
+        </button>
+
+        <!-- Stella Chat Window -->
+        <div class="stella-chat-window" id="stellaChatWindow">
+            <div class="stella-chat-header">
+                <div class="stella-info">
+                    <div class="stella-avatar">✨</div>
+                    <div class="stella-name">
+                        <h3>Stella</h3>
+                        <div class="stella-status">AI Travel Assistant</div>
+                    </div>
+                </div>
+                <button class="close-stella" onclick="toggleStella()">×</button>
+            </div>
+
+            <div class="stella-chat-body" id="stellaChatBody">
+                <div class="stella-message bot">
+                    <div class="message-avatar">🤖</div>
+                    <div class="message-content">
+                        Hi! I'm Stella, your AI travel assistant! 🌍✨<br><br>
+                        I can help you:<br>
+                        • Find destinations based on your location<br>
+                        • Sort trips by price<br>
+                        • Add bookings to your cart<br>
+                        How can I assist you today?
+                    </div>
+                </div>
+            </div>
+
+            <div class="stella-quick-actions" id="stellaQuickActionsContainer">
+                <button class="quick-action-btn" onclick="stellaQuickAction('Show cheapest trips')">💰 Cheapest</button>
+                <button class="quick-action-btn" onclick="stellaQuickAction('Show most expensive trips')">💎
+                    Luxury</button>
+                <button class="quick-action-btn" onclick="stellaQuickAction('Book a trip')">✈️ Book A Trip</button>
+            </div>
+
+            <div class="stella-chat-input">
+                <input type="text" id="stellaInput" placeholder="Ask Stella anything..."
+                    onkeypress="handleStellaEnter(event)">
+                <button class="send-message-btn" onclick="sendStellaMessage()">➤</button>
+            </div>
+
+            <div class="stella-message bot" style="margin: 1rem;">
+                <div class="message-avatar">🤖</div>
+                <div class="typing-indicator" id="typingIndicator">
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Booking Modal -->
+        <div class="modal" id="bookingModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Book Your Trip Now </h2>
+                    <button class="close-modal" onclick="closeBookingModal()">×</button>
+                </div>
+                <div class="destination-preview" id="destinationPreview"></div>
+                <form class="booking-form" id="bookingForm">
+                    <div class="form-group">
+                        <label>Check-in Date :</label>
+                        <input type="date" id="checkIn" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Check-out Date :</label>
+                        <input type="date" id="checkOut" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Number of Guests : (Max Limit 6)</label>
+                        <select id="guests" required>
+                            <option value="1">1 Guest</option>
+                            <option value="2">2 Guests</option>
+                            <option value="3">3 Guests</option>
+                            <option value="4">4 Guests</option>
+                            <option value="5">5 Guests</option>
+                            <option value="6">6 Guests</option>
+                        </select>
+                    </div>
+                    <div class="form-group local-guide-group">
+                        <label style="margin:0 0 6px 0; display:block; font-weight:600;">Local Guide needed ?</label>
+                        <div class="local-guide-options" style="display:flex; gap:0.6rem;">
+                            <button type="button" class="lg-option" data-value="true">Opt-in (+$75) 👍</button>
+                            <button type="button" class="lg-option" data-value="false">Opt-out 👎</button>
+                        </div>
+                    </div>
+                    <button type="submit" class="add-to-cart-btn">Add to your Bookings</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Payment Modal -->
+        <div class="modal" id="paymentModal">
+            <div class="modal-content">
+                <div id="paypal-button-container"></div>
+                <div class="modal-header">
+                    <h2>Payment Details :</h2>
+                    <button class="close-modal" onclick="closePaymentModal()">×</button>
+                </div>
+                <div class="payment-details">
+                    <h3>Order Summary :</h3>
+                    <div id="paymentSummary" class="payment-summary"></div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Cart Overlay -->
+        <div class="cart-overlay" id="cartOverlay" onclick="toggleCart()"></div>
+
+        <!-- Cart Modal -->
+        <div class="cart-modal" id="cartModal">
+            <div class="cart-header">
+                <h2>Your Bookings :</h2>
+                <span class="close-cart" onclick="toggleCart()">×</span>
+            </div>
+            <div id="cartItems"></div>
+            <div class="cart-summary" id="cartSummary" style="display: none;">
+                <div class="summary-row">
+                    <span>Subtotal:</span>
+                    <span id="subtotal">$0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Platform Fee (1%):</span>
+                    <span id="platformFee">$0</span>
+                </div>
+                <div class="summary-row">
+                    <span>Taxes & Charges (8%):</span>
+                    <span id="taxes">$0</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Total:</span>
+                    <span id="totalAmount">$0</span>
+                </div>
+                <button class="checkout-btn" onclick="proceedToPayment()">Proceed to Payment</button>
+            </div>
+        </div>
+
+        <!-- Booking History Modal -->
+        <div class="history-modal" id="historyModal">
+            <div class="history-header">
+                <h2>📋 Booking History</h2>
+                <span class="close-history" onclick="toggleBookingHistory()">×</span>
+            </div>
+            <div class="history-tabs">
+                <button class="history-tab active" onclick="switchHistoryTab('completed')">Completed ✅</button>
+                <button class="history-tab" onclick="switchHistoryTab('visited')">My Wishlist ❤️</button>
+            </div>
+            <div id="completedHistory" class="history-content active">
+                <div id="completedItems"></div>
+            </div>
+            <div id="visitedHistory" class="history-content">
+                <div id="visitedItems"></div>
+            </div>
+        </div>
+
+        <!-- Ticket Details Modal -->
+        <div class="modal" id="ticketDetailsModal">
+            <div class="modal-content ticket-modal-content">
+                <div class="modal-header">
+                    <h2>🎫 Trip Details</h2>
+                    <button class="close-modal" onclick="closeTicketDetails()">×</button>
+                </div>
+                <div id="ticketDetailsContent"></div>
+            </div>
+        </div>
+
+        <!-- Destination Details Modal -->
+        <div class="modal" id="destinationDetailsModal">
+            <div class="modal-content destination-modal-content">
+                <div class="modal-header">
+                    <h2 id="destTitle">Destination</h2>
+                    <button class="close-modal" onclick="closeDestinationDetails()">×</button>
+                </div>
+                <div class="destination-banner" id="destBanner" style="overflow:hidden; border-radius:10px;">
+                    <img id="destBannerImg" src="" alt=""
+                        style="width:100%; height:160px; object-fit:cover; display:block;">
+                </div>
+                <div class="destination-body" style="padding:1rem 0;">
+                    <p id="destShort" style="color:#444; margin-bottom:0.6rem;"></p>
+
+                    <h4 style="margin:0.6rem 0 0.2rem 0;">Popular Sites</h4>
+                    <ul id="destSites" class="destination-list" style="text-align:left; margin-left:1rem; color:#555;">
+                    </ul>
+
+                    <h4 style="margin:0.6rem 0 0.2rem 0;">Top Attractions</h4>
+                    <div id="destAttractions" class="attraction-grid"
+                        style="display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.4rem;"></div>
+
+                    <div id="destLikes" style="margin-top:0.8rem; color:#666; font-weight:600;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Premium Lounge Modal -->
+        <div class="modal" id="premiumLoungeModal">
+            <div class="modal-content" style="max-width:500px;">
+                <div class="modal-header">
+                    <h2>👑 <span style="color:#2c9be5;">Premium</span></h2>
+                    <button class="close-modal" onclick="closePremiumLoungeModal()">×</button>
+                </div>
+                <div style="padding:1rem 0;">
+                    <div style="text-align:center; margin-bottom:1.5rem;">
+                        <p style="font-size:1.8rem; color:#070707; font-weight:bold; margin:0;">💼 VIP Lounge Experience
+                        </p>
+                    </div>
+                    <div style="background:#f9f9f9; padding:1rem; border-radius:10px; margin-bottom:1rem;">
+                        <h3 style="margin-top:0; color:#333;">Premium Lounge Benefits:</h3>
+                        <ul style="color:#555; line-height:1.8; margin:0; padding-left:1.5rem;">
+                            <li>✨ Complimentary airport lounge access at all layovers</li>
+                            <li>🍽️ Free premium meals and beverages</li>
+                            <li>🛋️ Comfortable recliners and rest areas</li>
+                            <li>📶 High-speed Wi-Fi and power outlets</li>
+                            <li>🚿 Shower facilities and spa amenities</li>
+                            <li>📺 Entertainment and business services</li>
+                        </ul>
+                    </div>
+                    <div
+                        style="background:#fff3cd; padding:1rem; border-radius:8px; border-left:4px solid #FFD700; margin-bottom:1rem;">
+                        <p style="margin:0; color:#333;"><strong>Add to your booking for only <span
+                                    style="color:#FFD700; font-size:1.2rem;">$399</span></strong></p>
+                    </div>
+                    <div style="text-align:center;">
+                        <button onclick="addPremiumLoungeToCart()"
+                            style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); color: white; border: none; padding: 1rem 2rem; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; width: 100%; transition: transform 0.3s;">
+                            👑 Add Premium Lounge
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Section -->
+        <section id="home" class="hero">
+            <div class="hero-video-container">
+                <div class="hero-video-placeholder">
+                    <video autoplay muted loop playsinline class="hero-video"
+                        style="width:100%; height:100%; object-fit:cover;">
+                        <source src="13520588_1920_1080_30fps.mp4" type="video/mp4">
+                    </video>
+                </div>
+            </div>
+            <div class="hero-overlay"></div>
+            <div class="hero-content">
+                <h1>Explore the World with Us
+                    <span class="airplane-animation">✈️</span>
+                </h1>
+                <p>Discover Amazing places at Exclusive deals ✨</p>
+                <button class="cta-button"
+                    onclick="document.querySelector('#destinations').scrollIntoView({behavior: 'smooth'})">Start Your
+                    Journey...</button>
+            </div>
+        </section>
+
+        <!-- Recommendations Section -->
+        <section id="recommendations" class="recommendations">
+            <h2 class="section-title">Why Choose TripMate?</h2>
+            <div class="rec-grid">
+                <div class="rec-card">
+                    <div class="rec-icon">💰</div>
+                    <h3>Best Price Guarantee</h3>
+                    <p>We offer the most competitive prices in the market. Find a lower price elsewhere and we'll match
+                        it plus give you an extra 5% off! Apply coupon codes "SUMMER20" or "WELCOME10"</p>
+                </div>
+                <div class="rec-card">
+                    <div class="rec-icon">🌟</div>
+                    <h3>Expert Travel Advisors</h3>
+                    <p>Our team of experienced travel consultants has visited over 100 countries and can provide insider
+                        tips for your perfect vacation.</p>
+                </div>
+                <div class="rec-card">
+                    <div class="rec-icon">🔒</div>
+                    <h3>Secure Booking</h3>
+                    <p>Your safety is our priority. All transactions are encrypted and we offer flexible cancellation
+                        policies for peace of mind.</p>
+                </div>
+                <div class="rec-card">
+                    <div class="rec-icon">⏰</div>
+                    <h3>24/7 Customer Support</h3>
+                    <p>Need help while traveling? Our support team is available round the clock to assist you with any
+                        queries or emergencies.</p>
+                </div>
+                <div class="rec-card">
+                    <div class="rec-icon">🎁</div>
+                    <h3>Exclusive Deals And Premium Subscription</h3>
+                    <p>Get access to members-only discounts, early bird specials, and seasonal promotions that you won't
+                        find anywhere else.</p>
+                </div>
+                <div class="rec-card">
+                    <div class="rec-icon">✅</div>
+                    <h3>Trusted by Thousands</h3>
+                    <p>Join over 50,000 happy travelers who have explored the world with us. Check out our 4.9-star
+                        rating on TrustPilot!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Destinations -->
+        <section id="destinations" class="destinations">
+            <h2 class="section-title">Popular Destinations 🤩</h2>
+            <div class="destination-grid">
+
+                <div class="destination-card"
+                    onclick="showDestinationDetails('Paris, France', 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800')">
+                    <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800" alt="Paris">
+                    <div class="price">Starting $1,299</div>
+                    <div class="destination-info">
+                        <h3>Paris, France</h3>
+                        <p>The city of lights and love awaits you !</p>
+                        <button class="book-btn"
+                            onclick="event.stopPropagation(); openBookingModal('Paris, France', 1299, 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800')">Book
+                            Now</button>
+                    </div>
+                </div>
+
+                <div class="destination-card"
+                    onclick="showDestinationDetails('Santorini, Greece', 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800')">
+                    <img src="https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800" alt="Santorini">
+                    <div class="price">Starting $1,599</div>
+                    <div class="destination-info">
+                        <h3>Santorini, Greece</h3>
+                        <p>Stunning sunsets and white-washed buildings..</p>
+                        <button class="book-btn"
+                            onclick="event.stopPropagation(); openBookingModal('Santorini, Greece', 1599, 'https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?w=800')">Book
+                            Now</button>
+                    </div>
+                </div>
+
+                <div class="destination-card"
+                    onclick="showDestinationDetails('Swiss Alps', 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800')">
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800" alt="Swiss Alps">
+                    <div class="price">Starting $2,199</div>
+                    <div class="destination-info">
+                        <h3>Swiss Alps</h3>
+                        <p>Majestic mountains and pristine landscapes !</p>
+                        <button class="book-btn"
+                            onclick="event.stopPropagation(); openBookingModal('Swiss Alps', 2199, 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800')">Book
+                            Now</button>
+                    </div>
+                </div>
+
+                <div class="destination-card"
+                    onclick="showDestinationDetails('Dubai, UAE', 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800')">
+                    <img src="https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800" alt="Dubai">
+                    <div class="price">Starting $1,799</div>
+                    <div class="destination-info">
+                        <h3>Dubai, UAE</h3>
+                        <p>Luxury and adventure in the desert ..</p>
+                        <button class="book-btn"
+                            onclick="event.stopPropagation(); openBookingModal('Dubai, UAE', 1799, 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800')">Book
+                            Now</button>
+                    </div>
+                </div>
+
+                <div class="destination-card"
+                    onclick="showDestinationDetails('Maldives', 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800')">
+                    <img src="https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800" alt="Maldives">
+                    <div class="price">Starting $2,499</div>
+                    <div class="destination-info">
+                        <h3>Maldives</h3>
+                        <p>Paradise on Earth with crystal clear waters ..</p>
+                        <button class="book-btn"
+                            onclick="event.stopPropagation(); openBookingModal('Maldives', 2499, 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800')">Book
+                            Now</button>
+                    </div>
+                </div>
+                <div class="destination-card"
+                    onclick="showDestinationDetails('Tokyo, Japan', 'https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=800')">
+                    <img src="https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=800" alt="Tokyo">
+                    <div class="price">Starting $1,899</div>
+                    <div class="destination-info">
+                        <h3>Tokyo, Japan</h3>
+                        <p>Where tradition meets futuristic innovation ..</p>
+                        <button class="book-btn"
+                            onclick="event.stopPropagation(); openBookingModal('Tokyo, Japan', 1899, 'https://images.unsplash.com/photo-1524413840807-0c3cb6fa808d?w=800')">Book
+                            Now</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Explore More Button -->
+        <div class="explore-more-container" style="text-align:center; margin:2rem 0 1rem 0;">
+            <button style="color:rgb(245, 245, 245);"="exploreMoreBtn" class="cta-button"
+                onclick="toggleExplore()">Explore More</button>
+        </div>
+
+        <!-- Explore Section (hidden by default) -->
+        <section id="exploreSection" class="explore-section" style="display:none; padding:2rem 5%;">
+            <h2 class="section-title" style="color: rgb(93, 93, 223);">Explore Places & Map</h2>
+            <div style="display:flex; gap:2rem; align-items:flex-start; flex-wrap:wrap;">
+                <div style="flex:1 1 380px; min-width:280px;">
+                    <p style="color:white; margin-bottom:0.8rem;">Discover more spots hand-picked for adventurous
+                        explorers. Click a marker on the map to open details or browse the list below.</p>
+                    <ul id="exploreList" style="list-style:none; padding:0; color:#333;">
+                    </ul>
+                </div>
+                <div style="flex:1 1 420px; min-width:300px;">
+                    <div class="world-map" id="worldMap"
+                        style="position:relative; width:100%; border-radius:10px; overflow:hidden; background: linear-gradient(135deg, #4a90e2, #357abd);">
+                        <!-- Real world map background image -->
+                        <img src="mew_gif/global_map2.jpg" alt="World Map"
+                            style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; z-index:0;" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services -->
+        <section id="services" class="services">
+            <h2 class="section-title">Our Services ✨</h2>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">🏨</div>
+                    <h3>Hotel Booking</h3>
+                    <p>Handpicked hotels and resorts at the best prices for your comfort</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">✈️</div>
+                    <h3>Flight Tickets</h3>
+                    <p>Best deals on domestic and international flights worldwide</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">🗺️</div>
+                    <h3>Tour Packages</h3>
+                    <p>Customized tour packages designed for unforgettable experiences</p>
+                </div>
+                <div class="service-card">
+                    <div class="service-icon">🚗</div>
+                    <h3>Car Rental</h3>
+                    <p>Comfortable vehicles for exploring destinations at your own pace</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact -->
+        <section id="contact" class="contact">
+            <h2 class="section-title">
+                Get In Touch With Us
+                <img src="mew_gif/mewmew.gif" alt="contact gif" class="contact-gif-inline">
+            </h2>
+            <form class="contact-form" onsubmit="handleContactSubmit(event)">
+                <div class="form-group">
+                    <label>Name :</label>
+                    <input type="text" required placeholder="eg : Indrajeet ">
+                </div>
+                <div class="form-group">
+                    <label>Email :</label>
+                    <input type="email" required placeholder="your@email.com">
+                </div>
+                <div class="form-group">
+                    <label>Destination Interest :</label>
+                    <input type="text" placeholder="Places to plan in future?">
+                </div>
+                <div class="form-group">
+                    <label>Message For Us :</label>
+                    <textarea placeholder="Tell us about your dream vacation..."></textarea>
+                </div>
+                <br>
+                <button type="submit" class="submit-btn">Drop a Message 💌</button>
+            </form>
+        </section>
+
+        <!-- Footer -->
+        <footer>
+            <div class="social-links">
+                <a href="#">📘</a>
+                <a href="#">📷</a>
+                <a href="#">🐦</a>
+                <a href="#">💼</a>
+            </div>
+            <p>&copy; 2025 TripMate Travel Agency. All rights reserved.</p>
+            <p>Making travel dreams come true since 2015✨</p>
+        </footer>
+
+        <script src="homepage.js"></script>
+        <script src="https://www.paypal.com/sdk/js?client-id=sb&currency=USD"></script>
+
+        <!-- Profile Modals -->
+        <!-- My Profile Modal -->
+        <div class="profile-modal" id="myProfileModal">
+            <div class="profile-modal-content">
+                <div class="modal-header">
+                    <h2>My Profile</h2>
+                    <button class="close-modal" onclick="closeProfileModal('myProfileModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="profile-section">
+                        <div class="profile-avatar-large">👤</div>
+                        <div class="profile-user-info">
+                            <h3 id="profileUserName">John Doe</h3>
+                            <p id="profileUserEmail">john@example.com</p>
+                            <p id="profileUserPhone">+1-234-567-8900</p>
+                            <p id="profileUserLocation">New York, USA</p>
+                        </div>
+                    </div>
+                    <button class="btn-edit" onclick="editProfile()">✏️ Edit Profile</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="profile-modal" id="settingsModal">
+            <div class="profile-modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="close-modal" onclick="closeProfileModal('settingsModal')">&times;</button>
+                </div>
+                <div class="modal-body settings-body">
+                    <div class="settings-group">
+                        <h4>Notifications</h4>
+                        <label class="toggle-option">
+                            <input type="checkbox" id="emailNotifications" checked>
+                            <span>Email Notifications</span>
+                        </label>
+                        <label class="toggle-option">
+                            <input type="checkbox" id="smsNotifications" checked>
+                            <span>SMS Notifications</span>
+                        </label>
+                        <label class="toggle-option">
+                            <input type="checkbox" id="promotionalEmails">
+                            <span>Promotional Emails</span>
+                        </label>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>Privacy & Security</h4>
+                        <button class="setting-btn" onclick="changePassword()">🔐 Change Password</button>
+                        <button class="setting-btn" onclick="enable2FA()">🔒 Enable 2-Factor Authentication</button>
+                        <button class="setting-btn" onclick="viewLoginHistory()">📊 Login History</button>
+                    </div>
+
+                    <div class="settings-group">
+                        <h4>Preferences</h4>
+                        <label class="setting-option">
+                            <span>Language</span>
+                            <select id="languagePreference">
+                                <option value="en">English</option>
+                                <option value="es">Spanish</option>
+                                <option value="fr">French</option>
+                                <option value="de">German</option>
+                                <option value="hi">Hindi</option>
+                            </select>
+                        </label>
+                        <label class="setting-option">
+                            <span>Currency</span>
+                            <select id="currencyPreference">
+                                <option value="USD">USD ($)</option>
+                                <option value="EUR">EUR (€)</option>
+                                <option value="GBP">GBP (£)</option>
+                                <option value="INR">INR (₹)</option>
+                                <option value="JPY">JPY (¥)</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="settings-group">
+                        <button class="btn-save" onclick="saveSettings()">💾 Save Settings</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Methods Modal -->
+        <div class="profile-modal" id="paymentModal">
+            <div class="profile-modal-content">
+                <div class="modal-header">
+                    <h2>Payment Methods</h2>
+                    <button class="close-modal" onclick="closeProfileModal('paymentModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="payment-methods-list" id="paymentMethodsList">
+                        <div class="payment-method-card">
+                            <span>💳 Visa ending in 4242</span>
+                            <button onclick="removePaymentMethod()">Remove</button>
+                        </div>
+                    </div>
+                    <button class="btn-add-payment" onclick="addPaymentMethod()">➕ Add Payment Method</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Wishlist Modal -->
+        <div class="profile-modal" id="wishlistModal">
+            <div class="profile-modal-content">
+                <div class="modal-header">
+                    <h2>My Wishlist</h2>
+                    <button class="close-modal" onclick="closeProfileModal('wishlistModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="wishlist-grid" id="wishlistGrid">
+                        <p class="empty-message">Your wishlist is empty. Start adding destinations!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Bookings Modal -->
+        <div class="profile-modal" id="myBookingsModal">
+            <div class="profile-modal-content">
+                <div class="modal-header">
+                    <h2>My Bookings</h2>
+                    <button class="close-modal" onclick="closeProfileModal('myBookingsModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="bookings-list" id="bookingsList">
+                        <p class="empty-message">No bookings yet. Start booking your adventure!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Modal -->
+        <div class="profile-modal" id="editProfileModal">
+            <div class="profile-modal-content">
+                <div class="modal-header">
+                    <h2>Edit Profile</h2>
+                    <button class="close-modal" onclick="closeProfileModal('editProfileModal')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form onsubmit="saveProfileChanges(event)">
+                        <div class="form-group">
+                            <label>Full Name</label>
+                            <input type="text" id="editName" placeholder="Your full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" id="editEmail" placeholder="Your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Phone</label>
+                            <input type="tel" id="editPhone" placeholder="Your phone number" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Location</label>
+                            <input type="text" id="editLocation" placeholder="Your location" required>
+                        </div>
+                        <button type="submit" class="btn-save">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </body>
+
+</html>
