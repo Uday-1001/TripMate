@@ -16,13 +16,13 @@
 
 🎨 Modern & Clean UI Design Professionally styled layouts using CSS for an appealing user experience.
 
-📱 Fully Responsive Design Optimized for desktops, tablets, and mobile devices.
-
 ⚡ Smooth Navigation & Animations Enhanced interactivity with hover effects, transitions, and JavaScript-driven behaviors.
 
 
 
 🚀 Future Enhancements
+
+📱 Fully Responsive Design Optimized for desktops, tablets, and mobile devices.
 
 Integration with backend services and APIs
 
